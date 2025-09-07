@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import CompanyCard from "@/components/CompanyCard";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -37,8 +38,29 @@ export default function StudentMatchesPage({
 	student,
 	matches,
 }: StudentMatchesPageProps) {
+	const [currentMatches, setCurrentMatches] = useState(matches);
+	const [sortKey, setSortKey] = useState(0);
+
+	// Update matches when props change
+	useEffect(() => {
+		setCurrentMatches(matches);
+	}, [matches]);
+
+	// Function to handle card updates and trigger re-sort
+	const handleCardUpdate = (companyId: string, newStage: string) => {
+		setCurrentMatches((prev) =>
+			prev.map((match) =>
+				match.company.id === companyId
+					? { ...match, company: { ...match.company, stage: newStage } }
+					: match
+			)
+		);
+		// Force re-render with new sort order
+		setSortKey((prev) => prev + 1);
+	};
+
 	// Sort matches: Accepted first, then pending, then declined last
-	const sortedMatches = matches.sort((a, b) => {
+	const sortedMatches = currentMatches.sort((a, b) => {
 		// First priority: Declined cards go to the bottom
 		if (a.company.stage === "rejected" && b.company.stage !== "rejected")
 			return 1;
@@ -98,29 +120,41 @@ export default function StudentMatchesPage({
 						</p>
 					</div>
 				) : (
-					<motion.div
-						className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8"
-						layout
-					>
-						<AnimatePresence mode="popLayout">
-							{sortedMatches.map((match, index) => (
-								<motion.div
-									key={`${match.company.id}-${match.company.stage}`}
-									layout
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: -20 }}
-									transition={{
-										duration: 0.4,
-										ease: "easeOut",
-										delay: index * 0.03,
-									}}
-								>
-									<CompanyCard company={match.company} />
-								</motion.div>
-							))}
-						</AnimatePresence>
-					</motion.div>
+					<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8">
+						{sortedMatches.map((match, index) => (
+							<motion.div
+								key={match.company.id}
+								layout
+								initial={false}
+								animate={{
+									opacity: 1,
+									scale: 1,
+									transition: {
+										type: "spring",
+										stiffness: 500,
+										damping: 35,
+										mass: 1,
+									},
+								}}
+								transition={{
+									layout: {
+										type: "spring",
+										stiffness: 400,
+										damping: 40,
+										mass: 1,
+									},
+								}}
+								style={{
+									zIndex: match.company.stage === "rejected" ? 1 : 10,
+								}}
+							>
+								<CompanyCard
+									company={match.company}
+									onStageUpdate={handleCardUpdate}
+								/>
+							</motion.div>
+						))}
+					</div>
 				)}
 			</div>
 			<Footer />

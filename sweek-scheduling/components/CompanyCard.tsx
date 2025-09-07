@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Check, X, Undo2, Calendar, Star } from "lucide-react";
 import {
 	Select,
@@ -26,9 +27,13 @@ interface Company {
 
 interface CompanyCardProps {
 	company: Company;
+	onStageUpdate?: (companyId: string, newStage: string) => void;
 }
 
-export default function CompanyCard({ company }: CompanyCardProps) {
+export default function CompanyCard({
+	company,
+	onStageUpdate,
+}: CompanyCardProps) {
 	const [stage, setStage] = React.useState(company.stage);
 	const [isUpdating, setIsUpdating] = React.useState(false);
 	const [showDetails, setShowDetails] = React.useState(stage !== "pending");
@@ -70,6 +75,11 @@ export default function CompanyCard({ company }: CompanyCardProps) {
 				// For other stages (scheduled, completed, etc.), keep details shown
 				setShowDetails(true);
 			}
+
+			// Call the parent callback to trigger re-sort animation
+			if (onStageUpdate) {
+				onStageUpdate(company.id, newStage);
+			}
 		} catch (error) {
 			console.error("Error updating stage:", error);
 			// You could add a toast notification here to show the error to the user
@@ -97,10 +107,20 @@ export default function CompanyCard({ company }: CompanyCardProps) {
 	// Also show declined cards as small preview cards
 	if ((isPending && !showDetails) || isRejected) {
 		return (
-			<div
-				className={`group relative rounded-lg border overflow-hidden transition-all duration-300 ${
+			<motion.div
+				layout
+				animate={{
+					opacity: isRejected ? 0.6 : 1,
+					scale: isRejected ? 0.95 : 1,
+				}}
+				transition={{
+					layout: { type: "spring", stiffness: 400, damping: 40 },
+					opacity: { duration: 0.3 },
+					scale: { duration: 0.3 },
+				}}
+				className={`group relative rounded-lg border overflow-hidden ${
 					isRejected
-						? "bg-gray-50 border-gray-300 opacity-60 grayscale min-h-[200px] hover:opacity-80"
+						? "bg-gray-50 border-gray-300 grayscale min-h-[200px] hover:opacity-80"
 						: "bg-white border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-1 min-h-[280px]"
 				}`}
 			>
@@ -202,15 +222,24 @@ export default function CompanyCard({ company }: CompanyCardProps) {
 						</>
 					)}
 				</div>
-			</div>
+			</motion.div>
 		);
 	}
 
 	// Full details mode
 	return (
-		<div
-			className={`group relative bg-white rounded-lg border border-gray-200 overflow-visible transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-1 min-h-[420px] ${
-				isRejected ? "opacity-60 grayscale" : ""
+		<motion.div
+			layout
+			animate={{
+				opacity: isRejected ? 0.6 : 1,
+				scale: 1,
+			}}
+			transition={{
+				layout: { type: "spring", stiffness: 400, damping: 40 },
+				opacity: { duration: 0.3 },
+			}}
+			className={`group relative bg-white rounded-lg border border-gray-200 overflow-visible hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-1 min-h-[420px] ${
+				isRejected ? "grayscale" : ""
 			}`}
 		>
 			{/* Undo Button - Top Right Corner */}
@@ -364,6 +393,6 @@ export default function CompanyCard({ company }: CompanyCardProps) {
 					)}
 				</div>
 			</div>
-		</div>
+		</motion.div>
 	);
 }
