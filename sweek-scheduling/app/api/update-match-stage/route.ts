@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate stage
-    const validStages = ['pending', 'accepted', 'rejected', 'assigned', 'scheduled', 'completed', 'declined', 'canceled', 'no_show'];
+    const validStages = ['pending', 'accepted', 'rejected', 'assigned', 'need_to_schedule', 'scheduled', 'completed', 'declined', 'canceled', 'no_show'];
     if (!validStages.includes(stage)) {
       return NextResponse.json(
         { error: 'Invalid stage value' },

@@ -29,6 +29,7 @@ class Company:
     looking_for: Optional[str] = None
     logo_slug: Optional[str] = None
     scheduling_url: Optional[str] = None
+    website_url: Optional[str] = None
 
 @dataclass
 class Student:
@@ -115,7 +116,8 @@ def parse_companies_csv(file_path: str) -> Dict[str, Company]:
                 blurb=row.get('blurb', '').strip() or None,
                 looking_for=row.get('looking_for', '').strip() or None,
                 logo_slug=row.get('logo_slug', '').strip() or None,
-                scheduling_url=row.get('scheduling_url', '').strip() or None
+                scheduling_url=row.get('scheduling_url', '').strip() or None,
+                website_url=row.get('website_url', '').strip() or None
             )
     return companies
 
@@ -130,6 +132,7 @@ def upsert_companies(supabase: Client, companies: Dict[str, Company]) -> None:
             'looking_for': company.looking_for,
             'logo_slug': company.logo_slug,
             'scheduling_url': company.scheduling_url or f"https://calendly.com/{company.name.lower().replace(' ', '-')}",
+            'website_url': company.website_url,
             'is_active': True
         }
         
@@ -158,15 +161,22 @@ def upsert_students(supabase: Client, matches: List[Match]) -> Dict[str, Student
         existing = supabase.table('sweek_students').select('*').eq('email', email).execute()
         
         if existing.data:
-            # Student exists, use existing token
+            # Student exists, update name and use existing token
             student_data = existing.data[0]
+            
+            # Update the name if it's different
+            if student_data['name'] != student_name:
+                supabase.table('sweek_students').update({'name': student_name}).eq('email', email).execute()
+                print(f"  ✓ {email} (updated name: {student_name})")
+            else:
+                print(f"  ✓ {email} (existing)")
+                
             students[email] = Student(
                 email=email,
-                name=student_data['name'],
+                name=student_name,  # Use the name from CSV
                 token=student_data['token'],
                 token_hash=student_data['token_hash']
             )
-            print(f"  ✓ {email} (existing)")
         else:
             # New student, generate token
             token = generate_token()

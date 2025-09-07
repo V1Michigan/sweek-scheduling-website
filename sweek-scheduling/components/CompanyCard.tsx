@@ -3,6 +3,14 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Check, X, Undo2, Calendar, Star } from "lucide-react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 interface Company {
 	id: string;
@@ -13,6 +21,7 @@ interface Company {
 	tier: string;
 	stage: string;
 	scheduling_url: string;
+	website_url?: string;
 }
 
 interface CompanyCardProps {
@@ -70,7 +79,7 @@ export default function CompanyCard({ company }: CompanyCardProps) {
 	};
 
 	const handlePreviewAccept = () => {
-		updateStage("accepted");
+		updateStage("need_to_schedule");
 	};
 
 	const handlePreviewReject = () => {
@@ -78,16 +87,149 @@ export default function CompanyCard({ company }: CompanyCardProps) {
 	};
 
 	const isRejected = stage === "rejected";
-	const isAccepted = stage === "accepted";
+	const isAccepted =
+		stage === "need_to_schedule" ||
+		stage === "scheduled" ||
+		stage === "completed";
 	const isPending = stage === "pending";
 
 	// Preview mode - show minimal info with check/X buttons
-	if (isPending && !showDetails) {
+	// Also show declined cards as small preview cards
+	if ((isPending && !showDetails) || isRejected) {
 		return (
-			<div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6">
+			<div
+				className={`group relative rounded-lg border overflow-hidden transition-all duration-300 ${
+					isRejected
+						? "bg-gray-50 border-gray-300 opacity-60 grayscale min-h-[200px] hover:opacity-80"
+						: "bg-white border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-1 min-h-[280px]"
+				}`}
+			>
+				{/* Undo Button - Top Right Corner for declined cards */}
+				{isRejected && (
+					<button
+						onClick={() => updateStage("pending")}
+						disabled={isUpdating}
+						className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 flex items-center justify-center transition-all duration-200 z-20 shadow-sm"
+						title="Reset to preview"
+					>
+						<Undo2 className="w-4 h-4 text-gray-500" />
+					</button>
+				)}
+				{/* Card Content */}
+				<div
+					className={`p-6 flex flex-col h-full ${
+						isRejected ? "min-h-[152px]" : "min-h-[232px]"
+					}`}
+				>
+					{/* Logo */}
+					<div className="flex justify-center mb-4">
+						<div
+							className={`relative bg-gray-50 rounded-xl p-3 group-hover:bg-gray-100 transition-colors ${
+								isRejected ? "w-12 h-12" : "w-16 h-16"
+							}`}
+						>
+							<Image
+								src={`/logos/${company.logo_slug}.png`}
+								alt={`${company.name} logo`}
+								fill
+								className="object-contain"
+								onError={(e) => {
+									const target = e.target as HTMLImageElement;
+									target.src = "/placeholder-logo.svg";
+								}}
+							/>
+						</div>
+					</div>
+
+					{/* Company Name */}
+					{company.website_url ? (
+						<Link
+							href={company.website_url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={`font-instrument font-medium text-center leading-tight block hover:underline transition-colors ${
+								isRejected
+									? "text-base text-gray-400 line-through mb-2 hover:text-gray-500"
+									: "text-xl text-[#444444] mb-4 hover:text-[#333]"
+							}`}
+						>
+							{company.name}
+						</Link>
+					) : (
+						<h3
+							className={`font-instrument font-medium text-center leading-tight ${
+								isRejected
+									? "text-base text-gray-400 line-through mb-2"
+									: "text-xl text-[#444444] mb-4"
+							}`}
+						>
+							{company.name}
+						</h3>
+					)}
+
+					{/* Instructions or Declined Status */}
+					{isRejected ? (
+						<div className="text-center mt-auto">
+							<p className="text-xs font-inter text-gray-400">Declined</p>
+						</div>
+					) : (
+						<>
+							<p className="text-xs font-inter text-[#444444]/60 text-center mb-6 leading-relaxed">
+								Please accept or decline
+								<br />
+								(You can always undo later if you change your mind)
+							</p>
+
+							{/* Action Buttons */}
+							<div className="mt-auto flex gap-3">
+								<button
+									onClick={handlePreviewAccept}
+									disabled={isUpdating}
+									className="flex-1 bg-yellow-400 hover:bg-yellow-300 text-[#191919] font-inter font-bold py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+								>
+									<Check className="w-4 h-4" />
+									Accept
+								</button>
+								<button
+									onClick={handlePreviewReject}
+									disabled={isUpdating}
+									className="flex-1 bg-gray-100 hover:bg-gray-200 text-[#444444] font-inter font-medium py-3 px-4 rounded-md transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
+								>
+									<X className="w-4 h-4" />
+									Pass
+								</button>
+							</div>
+						</>
+					)}
+				</div>
+			</div>
+		);
+	}
+
+	// Full details mode
+	return (
+		<div
+			className={`group relative bg-white rounded-lg border border-gray-200 overflow-visible transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-1 min-h-[420px] ${
+				isRejected ? "opacity-60 grayscale" : ""
+			}`}
+		>
+			{/* Undo Button - Top Right Corner */}
+			{!isPending && (
+				<button
+					onClick={() => updateStage("pending")}
+					disabled={isUpdating}
+					className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 flex items-center justify-center transition-all duration-200 z-20 shadow-sm"
+					title="Reset to preview"
+				>
+					<Undo2 className="w-4 h-4 text-gray-500" />
+				</button>
+			)}
+
+			{/* Card Content */}
+			<div className="p-6 flex flex-col h-full min-h-[372px]">
 				{/* Logo */}
-				<div className="flex items-center justify-center mb-4">
-					<div className="w-16 h-16 relative">
+				<div className="flex justify-center mb-4">
+					<div className="relative w-16 h-16 bg-gray-50 rounded-xl p-3 group-hover:bg-gray-100 transition-colors">
 						<Image
 							src={`/logos/${company.logo_slug}.png`}
 							alt={`${company.name} logo`}
@@ -102,231 +244,125 @@ export default function CompanyCard({ company }: CompanyCardProps) {
 				</div>
 
 				{/* Company Name */}
-				<h3 className="text-xl font-semibold text-gray-900 mb-2 text-center">
-					{company.name}
-				</h3>
+				{company.website_url ? (
+					<Link
+						href={company.website_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						className={`text-xl font-instrument font-medium text-center mb-4 leading-tight block hover:underline transition-colors ${
+							isRejected
+								? "line-through text-gray-400 hover:text-gray-500"
+								: "text-[#444444] hover:text-[#333]"
+						}`}
+					>
+						{company.name}
+					</Link>
+				) : (
+					<h3
+						className={`text-xl font-instrument font-medium text-center mb-4 leading-tight ${
+							isRejected ? "line-through text-gray-400" : "text-[#444444]"
+						}`}
+					>
+						{company.name}
+					</h3>
+				)}
 
-				{/* Top 10 Badge */}
-				{company.tier === "Top 10" && (
-					<div className="flex justify-center mb-4">
-						<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-							Top 10
-						</span>
+				{/* Company Description */}
+				<p
+					className={`text-sm font-inter leading-relaxed text-center mb-4 ${
+						isRejected ? "text-gray-400" : "text-[#444444]"
+					}`}
+				>
+					{company.blurb}
+				</p>
+
+				{/* Looking For */}
+				<div className="mb-4">
+					<h4
+						className={`text-sm font-inter font-semibold mb-2 text-center ${
+							isRejected ? "text-gray-400" : "text-[#444444]"
+						}`}
+					>
+						Looking for:
+					</h4>
+					<p
+						className={`text-sm font-inter leading-relaxed text-center ${
+							isRejected ? "text-gray-400" : "text-[#444444]"
+						}`}
+					>
+						{company.looking_for}
+					</p>
+				</div>
+
+				{/* Stage Dropdown */}
+				{!isPending && (
+					<div className="mb-6 relative z-30">
+						<label className="block text-sm font-inter font-medium text-[#444444] mb-2 text-center">
+							Update Status:
+						</label>
+						<Select
+							value={stage}
+							onValueChange={updateStage}
+							disabled={isUpdating}
+						>
+							<SelectTrigger className="w-full bg-white border-gray-200 focus:border-yellow-400 focus:ring-yellow-400/20 h-10">
+								<SelectValue placeholder="Select status" />
+							</SelectTrigger>
+							<SelectContent className="z-50 bg-white border border-gray-200 shadow-lg">
+								<SelectItem value="need_to_schedule">
+									📋 Need to Schedule
+								</SelectItem>
+								<SelectItem value="scheduled">📅 Scheduled</SelectItem>
+								<SelectItem value="completed">✅ Completed</SelectItem>
+								<SelectItem value="canceled">🚫 Canceled</SelectItem>
+								<SelectItem value="no_show">⏰ No Show</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 				)}
 
-				{/* Preview Action Buttons */}
-				<div className="flex gap-3 justify-center">
-					<button
-						onClick={handlePreviewAccept}
-						disabled={isUpdating}
-						className="w-12 h-12 bg-green-600 hover:bg-green-700 text-white rounded-full flex items-center justify-center transition-colors duration-200 disabled:opacity-50"
-						title="Accept"
-					>
-						<svg
-							className="w-6 h-6"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M5 13l4 4L19 7"
-							/>
-						</svg>
-					</button>
-					<button
-						onClick={handlePreviewReject}
-						disabled={isUpdating}
-						className="w-12 h-12 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center transition-colors duration-200 disabled:opacity-50"
-						title="Reject"
-					>
-						<svg
-							className="w-6 h-6"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M6 18L18 6M6 6l12 12"
-							/>
-						</svg>
-					</button>
+				{/* Action Button & Additional Info */}
+				<div className="mt-auto space-y-3">
+					{(stage === "need_to_schedule" ||
+						stage === "scheduled" ||
+						stage === "completed") && (
+						<>
+							{/* Scheduling Information */}
+							<div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+								<p className="text-sm font-inter text-green-700 font-medium mb-1">
+									🎉 Great choice!
+								</p>
+								<p className="text-xs font-inter text-green-600">
+									Click below to schedule your chat with {company.name}
+								</p>
+							</div>
+
+							{/* Schedule Button */}
+							<Link
+								href={company.scheduling_url}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="group w-full bg-yellow-400 hover:bg-yellow-300 text-[#191919] font-inter font-bold py-3 px-4 rounded-md transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2 hover:scale-[1.02]"
+							>
+								<Calendar className="w-4 h-4 group-hover:scale-110 transition-transform" />
+								Schedule Meeting
+								<svg
+									className="w-3 h-3 opacity-70 group-hover:translate-x-0.5 transition-transform"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+									/>
+								</svg>
+							</Link>
+						</>
+					)}
 				</div>
-			</div>
-		);
-	}
-
-	// Full details mode
-	return (
-		<div
-			className={`rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 relative ${
-				isRejected ? "bg-gray-100 opacity-60" : "bg-white"
-			}`}
-		>
-			{/* Undo Button - Top Right Corner */}
-			{!isPending && (
-				<button
-					onClick={() => updateStage("pending")}
-					disabled={isUpdating}
-					className="absolute top-2 right-2 w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-full flex items-center justify-center transition-colors duration-200 disabled:opacity-50 text-sm"
-					title="Undo"
-				>
-					<svg
-						className="w-4 h-4"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-						/>
-					</svg>
-				</button>
-			)}
-			{/* Logo */}
-			<div className="flex items-center justify-center mb-4">
-				<div className="w-16 h-16 relative">
-					<Image
-						src={`/logos/${company.logo_slug}.png`}
-						alt={`${company.name} logo`}
-						fill
-						className={`object-contain ${isRejected ? "grayscale" : ""}`}
-						onError={(e) => {
-							const target = e.target as HTMLImageElement;
-							target.src = "/placeholder-logo.svg";
-						}}
-					/>
-				</div>
-			</div>
-
-			{/* Company Name */}
-			<h3
-				className={`text-xl font-semibold mb-2 ${
-					isRejected ? "text-gray-500 line-through" : "text-gray-900"
-				}`}
-			>
-				{company.name}
-			</h3>
-
-			{/* Badges */}
-			<div className="flex flex-wrap gap-2 mb-3">
-				{company.tier === "Top 10" && (
-					<span
-						className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-							isRejected
-								? "bg-gray-200 text-gray-500"
-								: "bg-yellow-100 text-yellow-800"
-						}`}
-					>
-						Top 10
-					</span>
-				)}
-				{stage === "accepted" && (
-					<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-						Accepted
-					</span>
-				)}
-				{stage === "rejected" && (
-					<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-						Rejected
-					</span>
-				)}
-				{stage === "scheduled" && (
-					<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-						Scheduled
-					</span>
-				)}
-				{stage === "completed" && (
-					<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-						Completed
-					</span>
-				)}
-				{stage === "declined" && (
-					<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-						Declined
-					</span>
-				)}
-				{stage === "canceled" && (
-					<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-						Canceled
-					</span>
-				)}
-				{stage === "no_show" && (
-					<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-						No Show
-					</span>
-				)}
-			</div>
-
-			{/* Blurb */}
-			<p
-				className={`text-sm mb-3 line-clamp-3 ${
-					isRejected ? "text-gray-400" : "text-gray-600"
-				}`}
-			>
-				{company.blurb}
-			</p>
-
-			{/* Looking For */}
-			<div className="mb-4">
-				<h4
-					className={`text-sm font-medium mb-1 ${
-						isRejected ? "text-gray-400" : "text-gray-900"
-					}`}
-				>
-					Looking for:
-				</h4>
-				<p
-					className={`text-sm ${
-						isRejected ? "text-gray-400" : "text-gray-600"
-					}`}
-				>
-					{company.looking_for}
-				</p>
-			</div>
-
-			{/* Stage Dropdown */}
-			{!isPending && (
-				<div className="mb-4">
-					<label className="block text-sm font-medium text-gray-700 mb-2">
-						Current Stage:
-					</label>
-					<select
-						value={stage}
-						onChange={(e) => updateStage(e.target.value)}
-						disabled={isUpdating}
-						className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-					>
-						<option value="scheduled">Scheduled</option>
-						<option value="completed">Completed</option>
-						<option value="declined">Declined</option>
-						<option value="canceled">Canceled</option>
-						<option value="no_show">No Show</option>
-					</select>
-				</div>
-			)}
-
-			{/* Action Buttons */}
-			<div className="space-y-2">
-				{isAccepted && (
-					<Link
-						href={company.scheduling_url}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 text-center block"
-					>
-						Schedule Meeting
-					</Link>
-				)}
 			</div>
 		</div>
 	);

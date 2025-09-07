@@ -1,4 +1,4 @@
-name,blurb,looking_for,logo_slug,scheduling_url
-Acme Robotics,Leading robotics company building the future,Software engineers and robotics specialists,acme-robotics,https://calendly.com/acme-robotics
-TechCorp,Innovative tech solutions for modern problems,Full-stack developers and product managers,techcorp,https://calendly.com/techcorp
-DataFlow,Big data analytics and machine learning,Data scientists and ML engineers,dataflow,https://calendly.com/dataflow
+name,blurb,looking_for,logo_slug,scheduling_url,website_url
+Acme Robotics,Leading robotics company building the future,Software engineers and robotics specialists,acme-robotics,https://calendly.com/acme-robotics,https://acmerobotics.com
+TechCorp,Innovative tech solutions for modern problems,Full-stack developers and product managers,techcorp,https://calendly.com/techcorp,https://techcorp.com
+DataFlow,Big data analytics and machine learning,Data scientists and ML engineers,dataflow,https://calendly.com/dataflow,https://dataflow.com
