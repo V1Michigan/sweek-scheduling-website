@@ -13,7 +13,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # Gmail API scopes
-SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+SCOPES = ['https://www.googleapis.com/auth/gmail.send',
+'https://www.googleapis.com/auth/gmail.readonly']
 
 def check_credentials_file():
     """Check if credentials.json exists."""
