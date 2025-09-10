@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, X, Undo2, Calendar, Star } from "lucide-react";
+import { Check, X, Undo2, Calendar, Star, ExternalLink } from "lucide-react";
 import {
 	Select,
 	SelectContent,
@@ -171,7 +171,15 @@ export default function CompanyCard({
 									: "text-xl text-[#444444] mb-4 hover:text-[#333]"
 							}`}
 						>
-							{company.name}
+							<div className="flex items-center justify-center gap-2">
+								<span>{company.name}</span>
+								<ExternalLink
+									size={16}
+									className={`${
+										isRejected ? "text-gray-400" : "text-[#666]"
+									} group-hover:text-[#333] transition-colors`}
+								/>
+							</div>
 						</Link>
 					) : (
 						<h3
@@ -281,7 +289,15 @@ export default function CompanyCard({
 								: "text-[#444444] hover:text-[#333]"
 						}`}
 					>
-						{company.name}
+						<div className="flex items-center justify-center gap-2">
+							<span>{company.name}</span>
+							<ExternalLink
+								size={16}
+								className={`${
+									isRejected ? "text-gray-400" : "text-[#666]"
+								} group-hover:text-[#333] transition-colors`}
+							/>
+						</div>
 					</Link>
 				) : (
 					<h3
