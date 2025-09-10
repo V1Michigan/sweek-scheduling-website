@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Header() {
@@ -13,7 +12,7 @@ export default function Header() {
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					<Image
+					<img
 						src="/v1-logo.png"
 						alt="V1 Logo"
 						width={32}

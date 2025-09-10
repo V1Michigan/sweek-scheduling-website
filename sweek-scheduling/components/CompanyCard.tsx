@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, X, Undo2, Calendar, Star } from "lucide-react";
@@ -148,11 +147,10 @@ export default function CompanyCard({
 								isRejected ? "w-12 h-12" : "w-16 h-16"
 							}`}
 						>
-							<Image
+							<img
 								src={`/logos/${company.logo_slug}.png`}
 								alt={`${company.name} logo`}
-								fill
-								className="object-contain"
+								className="w-full h-full object-contain"
 								onError={(e) => {
 									const target = e.target as HTMLImageElement;
 									target.src = "/placeholder-logo.svg";
@@ -259,11 +257,10 @@ export default function CompanyCard({
 				{/* Logo */}
 				<div className="flex justify-center mb-4">
 					<div className="relative w-16 h-16 bg-gray-50 rounded-xl p-3 group-hover:bg-gray-100 transition-colors">
-						<Image
+						<img
 							src={`/logos/${company.logo_slug}.png`}
 							alt={`${company.name} logo`}
-							fill
-							className="object-contain"
+							className="w-full h-full object-contain"
 							onError={(e) => {
 								const target = e.target as HTMLImageElement;
 								target.src = "/placeholder-logo.svg";
