@@ -17,7 +17,7 @@ interface Company {
 	id: string;
 	name: string;
 	blurb: string;
-	looking_for: string;
+	learn_more_url: string;
 	logo_slug: string;
 	tier: string;
 	stage: string;

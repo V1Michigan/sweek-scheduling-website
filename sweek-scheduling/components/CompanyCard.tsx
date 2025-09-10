@@ -16,7 +16,7 @@ interface Company {
 	id: string;
 	name: string;
 	blurb: string;
-	looking_for: string;
+	learn_more_url: string;
 	logo_slug: string;
 	tier: string;
 	stage: string;
@@ -318,22 +318,21 @@ export default function CompanyCard({
 					{company.blurb}
 				</p>
 
-				{/* Looking For */}
+				{/* Learn More Link */}
 				<div className="mb-4">
-					<h4
-						className={`text-sm font-inter font-semibold mb-2 text-center ${
-							isRejected ? "text-gray-400" : "text-[#444444]"
+					<Link
+						href={company.learn_more_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						className={`inline-flex items-center gap-2 text-sm font-inter font-medium text-center mx-auto transition-colors ${
+							isRejected
+								? "text-gray-400 hover:text-gray-500"
+								: "text-[#0066cc] hover:text-[#0052a3]"
 						}`}
 					>
-						Looking for:
-					</h4>
-					<p
-						className={`text-sm font-inter leading-relaxed text-center ${
-							isRejected ? "text-gray-400" : "text-[#444444]"
-						}`}
-					>
-						{company.looking_for}
-					</p>
+						<span>Learn more</span>
+						<ExternalLink size={14} />
+					</Link>
 				</div>
 
 				{/* Stage Dropdown */}

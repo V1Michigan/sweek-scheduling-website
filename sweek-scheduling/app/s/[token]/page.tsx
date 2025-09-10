@@ -20,7 +20,7 @@ interface Company {
 	id: string;
 	name: string;
 	blurb: string;
-	looking_for: string;
+	learn_more_url: string;
 	logo_slug: string;
 	tier: string;
 	stage: string;
@@ -70,7 +70,7 @@ async function getStudentMatches(studentId: string): Promise<Match[]> {
               id,
               name,
               blurb,
-              looking_for,
+              learn_more_url,
               logo_slug,
               scheduling_url,
               website_url

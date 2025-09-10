@@ -26,7 +26,7 @@ APP_BASE_URL = os.getenv('APP_BASE_URL', 'http://localhost:3000')
 class Company:
     name: str
     blurb: Optional[str] = None
-    looking_for: Optional[str] = None
+    learn_more_url: Optional[str] = None
     logo_slug: Optional[str] = None
     scheduling_url: Optional[str] = None
     website_url: Optional[str] = None
@@ -114,7 +114,7 @@ def parse_companies_csv(file_path: str) -> Dict[str, Company]:
             companies[name] = Company(
                 name=name,
                 blurb=row.get('blurb', '').strip() or None,
-                looking_for=row.get('looking_for', '').strip() or None,
+                learn_more_url=row.get('learn_more_url', '').strip() or None,
                 logo_slug=row.get('logo_slug', '').strip() or None,
                 scheduling_url=row.get('scheduling_url', '').strip() or None,
                 website_url=row.get('website_url', '').strip() or None
@@ -129,7 +129,7 @@ def upsert_companies(supabase: Client, companies: Dict[str, Company]) -> None:
         company_data = {
             'name': company.name,
             'blurb': company.blurb,
-            'looking_for': company.looking_for,
+            'learn_more_url': company.learn_more_url,
             'logo_slug': company.logo_slug,
             'scheduling_url': company.scheduling_url or f"https://calendly.com/{company.name.lower().replace(' ', '-')}",
             'website_url': company.website_url,

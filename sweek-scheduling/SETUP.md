@@ -20,7 +20,7 @@ create table sweek_companies(
   id uuid primary key default gen_random_uuid(),
   name text unique not null,
   blurb text,
-  looking_for text,
+  learn_more_url text,                 -- URL for "Learn more" link
   logo_slug text,                      -- e.g., 'acme-robotics' → /public/logos/acme-robotics.png
   scheduling_url text not null,
   is_active boolean default true
