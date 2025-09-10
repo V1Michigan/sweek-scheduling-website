@@ -4,6 +4,26 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Configure secrets scanning to ignore Supabase public keys (they're safe to expose)
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL"
+
+# Optimize build processing
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true
 
 [[redirects]]
   from = "/*"
